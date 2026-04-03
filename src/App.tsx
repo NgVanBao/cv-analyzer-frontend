@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import PartnerLogos from './components/PartnerLogos';
@@ -6,13 +7,22 @@ import HowItWorks from './components/HowItWorks';
 import FeaturedJobs from './components/FeaturedJobs';
 import Testimonials from './components/Testimonials';
 import Footer from './components/Footer';
+import AuthModal, { type AuthViewType } from './components/Auth/AuthModal';
 
 import './App.css';
 
 function App() {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authView, setAuthView] = useState<AuthViewType>('login');
+
+  const openAuthModal = (view: AuthViewType) => {
+    setAuthView(view);
+    setIsAuthModalOpen(true);
+  };
+
   return (
     <div className="app-wrapper">
-      <Header />
+      <Header onOpenAuth={openAuthModal} />
       <main>
         <HeroSection />
         <PartnerLogos />
@@ -22,6 +32,13 @@ function App() {
         <Testimonials />
       </main>
       <Footer />
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        initialView={authView}
+        onViewChange={setAuthView}
+      />
     </div>
   );
 }

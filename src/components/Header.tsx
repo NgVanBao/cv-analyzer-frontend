@@ -1,6 +1,11 @@
 import React from 'react';
+import { type AuthViewType } from './Auth/AuthModal';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onOpenAuth?: (view: AuthViewType) => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onOpenAuth }) => {
   return (
     <header className="header glass">
       <div className="container header-content">
@@ -14,8 +19,8 @@ const Header: React.FC = () => {
           <a href="#companies">Công ty nổi bật</a>
         </nav>
         <div className="auth-buttons">
-          <button className="btn btn-outline">Đăng nhập</button>
-          <button className="btn btn-primary">Đăng ký</button>
+          <button className="btn btn-outline" onClick={() => onOpenAuth && onOpenAuth('login')}>Đăng nhập</button>
+          <button className="btn btn-primary" onClick={() => onOpenAuth && onOpenAuth('register')}>Đăng ký</button>
         </div>
       </div>
     </header>
