@@ -6,15 +6,18 @@ interface Job {
   id: string;
   title: string;
   company: string;
+  description: string;
+  minSalary: number;
+  maxSalary: number;
   postDate: string;
   status: 'pending' | 'approved' | 'rejected';
 }
 
 const mockJobs: Job[] = [
-  { id: '101', title: 'Senior React Developer', company: 'TechNova', postDate: '2026-04-05', status: 'pending' },
-  { id: '102', title: 'Marketing Manager', company: 'Creative Digital', postDate: '2026-04-06', status: 'pending' },
-  { id: '103', title: 'Data Scientist', company: 'AI Solutions', postDate: '2026-04-01', status: 'approved' },
-  { id: '104', title: 'Backend Node.js', company: 'Startup XYZ', postDate: '2026-04-02', status: 'rejected' },
+  { id: '101', title: 'Senior React Developer', company: 'TechNova', description: 'Yêu cầu 3 năm kinh nghiệm ReactJS, hiểu biết về Webpack, Redux...', minSalary: 20000000, maxSalary: 40000000, postDate: '2026-04-05', status: 'pending' },
+  { id: '102', title: 'Marketing Manager', company: 'Creative Digital', description: 'Có kinh nghiệm chạy Ads, xây dựng plan marketing tổng thể...', minSalary: 15000000, maxSalary: 25000000, postDate: '2026-04-06', status: 'pending' },
+  { id: '103', title: 'Data Scientist', company: 'AI Solutions', description: 'Làm việc với Python, Tensorflow. Yêu cầu background toán tốt.', minSalary: 30000000, maxSalary: 60000000, postDate: '2026-04-01', status: 'approved' },
+  { id: '104', title: 'Backend Node.js', company: 'Startup XYZ', description: 'Xây dựng API với NestJS, làm việc với Microservices...', minSalary: 18000000, maxSalary: 35000000, postDate: '2026-04-02', status: 'rejected' },
 ];
 
 const AdminJobs: React.FC = () => {
@@ -60,9 +63,10 @@ const AdminJobs: React.FC = () => {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Mã TD</th>
                 <th>Tiêu đề công việc</th>
                 <th>Công ty</th>
+                <th>Mức lương</th>
                 <th>Ngày đăng</th>
                 <th>Trạng thái</th>
                 <th>Hành động</th>
@@ -72,8 +76,18 @@ const AdminJobs: React.FC = () => {
               {filteredJobs.map(job => (
                 <tr key={job.id}>
                   <td>#{job.id}</td>
-                  <td><strong>{job.title}</strong></td>
+                  <td>
+                    <strong>{job.title}</strong>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '220px' }}>
+                      {job.description}
+                    </p>
+                  </td>
                   <td>{job.company}</td>
+                  <td style={{ fontWeight: 500, color: '#0f172a' }}>
+                    {job.minSalary && job.maxSalary 
+                      ? `${(job.minSalary / 1000000).toLocaleString('vi-VN')}tr - ${(job.maxSalary / 1000000).toLocaleString('vi-VN')}tr` 
+                      : 'Chưa cập nhật'}
+                  </td>
                   <td>{job.postDate}</td>
                   <td>
                     <span className={`badge status-${job.status}`}>
@@ -116,7 +130,7 @@ const AdminJobs: React.FC = () => {
               ))}
               {filteredJobs.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center py-4">Không tìm thấy tin tuyển dụng nào.</td>
+                  <td colSpan={7} className="text-center py-4">Không tìm thấy tin tuyển dụng nào.</td>
                 </tr>
               )}
             </tbody>
