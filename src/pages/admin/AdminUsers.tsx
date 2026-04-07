@@ -29,7 +29,8 @@ const AdminUsers: React.FC = () => {
   };
 
   const handleViewProfile = (user: User) => {
-    alert(`Xem chi tiết hồ sơ: ${user.name}\nEmail: ${user.email}\nVai trò: ${user.role}`);
+    const roleVN = user.role === 'Candidate' ? 'Ứng viên' : user.role === 'Employer' ? 'Nhà tuyển dụng' : user.role;
+    alert(`Xem chi tiết hồ sơ: ${user.name}\nEmail: ${user.email}\nVai trò: ${roleVN}\nTrạng thái: ${user.status === 'active' ? 'Hoạt động' : 'Bị cấm'}`);
   };
 
   const filteredUsers = users.filter(u => 
@@ -72,7 +73,11 @@ const AdminUsers: React.FC = () => {
                   <td>#{user.id}</td>
                   <td><strong>{user.name}</strong></td>
                   <td>{user.email}</td>
-                  <td><span className={`badge role-${user.role.toLowerCase()}`}>{user.role}</span></td>
+                  <td>
+                    <span className={`badge role-${user.role.toLowerCase()}`}>
+                      {user.role === 'Candidate' ? 'Ứng viên' : user.role === 'Employer' ? 'Nhà tuyển dụng' : user.role}
+                    </span>
+                  </td>
                   <td>{user.joinDate}</td>
                   <td>
                     <span className={`badge status-${user.status}`}>
