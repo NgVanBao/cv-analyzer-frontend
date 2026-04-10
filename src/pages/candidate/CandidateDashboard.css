@@ -831,3 +831,33 @@
 }
 
 .btn-apply-now:hover { background-color: #4338ca; }
+
+/* Status Badges for Saved Jobs */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.active { background-color: #dcfce7; color: #16a34a; }
+.status-badge.closed { background-color: #f1f5f9; color: #64748b; }
+
+.btn-icon-unsave {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid #e11d48;
+  background: #fff1f2;
+  color: #e11d48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-icon-unsave:hover { background: #e11d48; color: white; }

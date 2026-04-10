@@ -8,6 +8,7 @@ import CandidateLayout from './pages/candidate/CandidateLayout';
 import CandidateOverview from './pages/candidate/CandidateOverview';
 import CVAnalysis from './pages/candidate/CVAnalysis';
 import SuitableJobs from './pages/candidate/SuitableJobs';
+import SavedJobs from './pages/candidate/SavedJobs';
 import { useAuth } from './context/AuthContext';
 import './App.css';
 
@@ -57,6 +58,7 @@ function App() {
         <Route path="dashboard" element={<CandidateOverview />} />
         <Route path="cv-analysis" element={<CVAnalysis />} />
         <Route path="suitable-jobs" element={<SuitableJobs />} />
+        <Route path="saved-jobs" element={<SavedJobs />} />
       </Route>
       
       {/* Bắt các route không tồn tại */}
