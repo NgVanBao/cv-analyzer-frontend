@@ -323,3 +323,285 @@
     z-index: 50;
   }
 }
+
+/* CV Analysis Page Styles */
+.candidate-stat-title-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.candidate-stat-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.candidate-stat-icon-small {
+  width: 32px;
+  height: 32px;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cv-analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 24px;
+}
+
+.candidate-card.upload-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-dropzone {
+  flex: 1;
+  border: 2px dashed #cbd5e1;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 250px;
+  margin-bottom: 0;
+}
+
+.upload-dropzone:hover {
+  border-color: #6366f1;
+  background-color: #eef2ff;
+}
+
+.upload-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background-color: #e2e8f0;
+  color: #64748b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.upload-dropzone:hover .upload-icon-wrapper {
+  background-color: #c7d2fe;
+  color: #4f46e5;
+}
+
+.upload-primary-text {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.upload-secondary-text {
+  margin: 0 0 16px 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.upload-hint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  background-color: #e2e8f0;
+  padding: 4px 12px;
+  border-radius: 16px;
+}
+
+/* Analysis Result Styles */
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.analysis-title {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.analysis-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #eef2ff;
+  color: #6366f1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.analysis-badge {
+  background-color: #dcfce7;
+  color: #15803d;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.analysis-content {
+  display: flex;
+  gap: 24px;
+}
+
+.analysis-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 140px;
+}
+
+.chart-center-label {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-score {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.chart-text {
+  font-size: 0.6rem;
+  color: #64748b;
+  margin-top: 2px;
+  text-align: center;
+}
+
+.chart-bottom-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-align: center;
+  margin-top: 12px;
+}
+
+.analysis-details {
+  flex: 1;
+}
+
+.skill-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skill-title.success {
+  color: #15803d;
+}
+
+.skill-title.danger {
+  color: #b91c1c;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-tag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 16px;
+}
+
+.skill-tag.success {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.skill-tag.danger {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.analysis-recommendation {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.cv-analysis-grid.single-column {
+  grid-template-columns: 1fr;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.spin-animation {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.slide-in-animation {
+  animation: slideIn 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.upload-dropzone.analyzing {
+  border-color: #6366f1;
+  background-color: #f5f3ff;
+  border-style: solid;
+  cursor: wait;
+}
+
+@media (max-width: 1024px) {
+  .cv-analysis-grid {
+    grid-template-columns: 1fr;
+  }
+  .analysis-content {
+    flex-direction: column;
+    align-items: center;
+  }
+  .analysis-chart {
+    margin-bottom: 24px;
+  }
+}

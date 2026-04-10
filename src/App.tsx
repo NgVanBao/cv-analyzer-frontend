@@ -6,6 +6,7 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminJobs from './pages/admin/AdminJobs';
 import CandidateLayout from './pages/candidate/CandidateLayout';
 import CandidateOverview from './pages/candidate/CandidateOverview';
+import CVAnalysis from './pages/candidate/CVAnalysis';
 import { useAuth } from './context/AuthContext';
 import './App.css';
 
@@ -53,6 +54,7 @@ function App() {
       }>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<CandidateOverview />} />
+        <Route path="cv-analysis" element={<CVAnalysis />} />
       </Route>
       
       {/* Bắt các route không tồn tại */}
