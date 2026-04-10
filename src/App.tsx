@@ -4,6 +4,8 @@ import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminJobs from './pages/admin/AdminJobs';
+import CandidateLayout from './pages/candidate/CandidateLayout';
+import CandidateOverview from './pages/candidate/CandidateOverview';
 import { useAuth } from './context/AuthContext';
 import './App.css';
 
@@ -11,6 +13,15 @@ import './App.css';
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdmin } = useAuth();
   if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+};
+
+// Component để bảo vệ các route dành cho ứng viên
+const CandidateRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  if (!user || user.role !== 'user') {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
@@ -32,6 +43,16 @@ function App() {
         <Route path="dashboard" element={<AdminOverview />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="jobs" element={<AdminJobs />} />
+      </Route>
+
+      {/* Các route dành cho ứng viên */}
+      <Route path="/candidate" element={
+        <CandidateRoute>
+          <CandidateLayout />
+        </CandidateRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<CandidateOverview />} />
       </Route>
       
       {/* Bắt các route không tồn tại */}

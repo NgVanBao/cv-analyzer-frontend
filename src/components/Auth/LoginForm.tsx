@@ -22,7 +22,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
       navigate('/admin/dashboard');
     } else {
       login({ id: '2', email, name: 'Candidate User', role: 'user' });
-      // Đăng nhập thành công, có thể đóng modal hoặc điều hướng đi đâu đó tùy ý
+      // Đăng nhập ứng viên thành công, điều hướng vào Candidate Dashboard.
+      // Việc navigate sẽ làm unmount Home component và AuthModal tự động đóng
+      navigate('/candidate/dashboard');
     }
   };
 
