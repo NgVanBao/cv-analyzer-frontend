@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
@@ -7,11 +9,23 @@ interface LoginFormProps {
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Login attempt:', { email, password });
-    // TODO: Connect API
+    
+    // Đăng nhập giả lập (MOCK)
+    if (email === 'admin@gmail.com' && password === 'admin') {
+      login({ id: '1', email, name: 'Admin User', role: 'admin' });
+      navigate('/admin/dashboard');
+    } else {
+      login({ id: '2', email, name: 'Candidate User', role: 'user' });
+      // Đăng nhập ứng viên thành công, điều hướng vào Candidate Dashboard.
+      // Việc navigate sẽ làm unmount Home component và AuthModal tự động đóng
+      navigate('/candidate/dashboard');
+    }
   };
 
   return (
