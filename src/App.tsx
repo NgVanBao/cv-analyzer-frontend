@@ -10,6 +10,7 @@ import CVAnalysis from './pages/candidate/CVAnalysis';
 import SuitableJobs from './pages/candidate/SuitableJobs';
 import SavedJobs from './pages/candidate/SavedJobs';
 import CandidateSettings from './pages/candidate/CandidateSettings';
+import CVManager from './pages/candidate/CVManager';
 import { useAuth } from './context/AuthContext';
 import './App.css';
 
@@ -60,6 +61,7 @@ function App() {
         <Route path="cv-analysis" element={<CVAnalysis />} />
         <Route path="suitable-jobs" element={<SuitableJobs />} />
         <Route path="saved-jobs" element={<SavedJobs />} />
+        <Route path="cv-manager" element={<CVManager />} />
         <Route path="settings" element={<CandidateSettings />} />
       </Route>
       

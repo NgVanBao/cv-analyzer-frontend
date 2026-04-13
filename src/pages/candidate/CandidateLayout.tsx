@@ -7,7 +7,8 @@ import {
   Briefcase, 
   Bookmark, 
   Settings, 
-  LogOut 
+  LogOut,
+  Files
 } from 'lucide-react';
 import './CandidateDashboard.css';
 
@@ -51,6 +52,10 @@ const CandidateLayout: React.FC = () => {
           ))}
           
           <div className="candidate-nav-section-title">Quản Lý</div>
+          <Link to="/candidate/cv-manager" className={`candidate-nav-item ${location.pathname === '/candidate/cv-manager' ? 'active' : ''}`}>
+             <Files size={20} />
+             <span>Quản Lý CV</span>
+          </Link>
           <Link to="/candidate/settings" className={`candidate-nav-item ${location.pathname === '/candidate/settings' ? 'active' : ''}`}>
              <Settings size={20} />
              <span>Cài Đặt</span>
