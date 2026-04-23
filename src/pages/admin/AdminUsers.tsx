@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Ban, Eye, Search } from 'lucide-react';
 import './AdminTable.css';
 
@@ -11,19 +11,32 @@ interface User {
   joinDate: string;
 }
 
-const mockUsers: User[] = [
-  { id: '1', name: 'Nguyễn Văn A', email: 'nva@gmail.com', role: 'Candidate', status: 'active', joinDate: '2026-01-15' },
-  { id: '2', name: 'Trần Thị B', email: 'ttb@techvn.com', role: 'Employer', status: 'active', joinDate: '2026-02-20' },
-  { id: '3', name: 'Lê Văn C', email: 'lvc@spam.com', role: 'Candidate', status: 'banned', joinDate: '2026-03-01' },
-];
-
 const AdminUsers: React.FC = () => {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:8000/api/nguoi_dung')
+      .then(res => res.json())
+      .then((data: any[]) => {
+        const mappedUsers = data.map(u => ({
+          id: u.MaTaiKhoan.toString(),
+          name: u.HoTen,
+          email: u.Email,
+          role: u.Vaitro === 'UngVien' ? 'Candidate' : u.Vaitro === 'NhaTuyenDung' ? 'Employer' : u.Vaitro,
+          status: 'active' as const, // DB không có cột trangthaisieuthu/status, nên mặc định là active
+          joinDate: u.created_at ? new Date(u.created_at).toLocaleDateString('vi-VN') : 'Không rõ'
+        }));
+        setUsers(mappedUsers);
+      })
+      .catch(err => console.error("Lỗi fetch Users:", err))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const handleBan = (id: string, currentStatus: string) => {
     // Fake ban toggle API call
-    setUsers(users.map(u => 
+    setUsers(users.map(u =>
       u.id === id ? { ...u, status: currentStatus === 'active' ? 'banned' : 'active' } : u
     ));
   };
@@ -33,8 +46,8 @@ const AdminUsers: React.FC = () => {
     alert(`Xem chi tiết hồ sơ: ${user.name}\nEmail: ${user.email}\nVai trò: ${roleVN}\nTrạng thái: ${user.status === 'active' ? 'Hoạt động' : 'Bị cấm'}`);
   };
 
-  const filteredUsers = users.filter(u => 
-    u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredUsers = users.filter(u =>
+    u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -44,9 +57,9 @@ const AdminUsers: React.FC = () => {
         <h1 className="admin-page-title">Quản lý người dùng</h1>
         <div className="admin-search-bar">
           <Search size={18} className="search-icon" />
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm người dùng..." 
+          <input
+            type="text"
+            placeholder="Tìm kiếm người dùng..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -77,6 +90,9 @@ const AdminUsers: React.FC = () => {
                     <span className={`badge role-${user.role.toLowerCase()}`}>
                       {user.role === 'Candidate' ? 'Ứng viên' : user.role === 'Employer' ? 'Nhà tuyển dụng' : user.role}
                     </span>
+
+
+
                   </td>
                   <td>{user.joinDate}</td>
                   <td>
@@ -86,15 +102,15 @@ const AdminUsers: React.FC = () => {
                   </td>
                   <td>
                     <div className="action-buttons">
-                      <button 
-                        className="btn-action view" 
+                      <button
+                        className="btn-action view"
                         onClick={() => handleViewProfile(user)}
                         title="Xem hồ sơ"
                       >
                         <Eye size={16} />
                       </button>
-                      <button 
-                        className={`btn-action ${user.status === 'active' ? 'ban' : 'unban'}`} 
+                      <button
+                        className={`btn-action ${user.status === 'active' ? 'ban' : 'unban'}`}
                         onClick={() => handleBan(user.id, user.status)}
                         title={user.status === 'active' ? 'Cấm tài khoản' : 'Mở khóa tài khoản'}
                       >

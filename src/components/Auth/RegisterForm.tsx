@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -8,11 +10,54 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Register attempt:', { name, email, password });
-    // TODO: Connect API
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          HoTen: name,
+          Email: email,
+          MatKhau: password,
+          Vaitro: 'UngVien' // Mặc định người dùng đăng ký mới trên app là ứng viên
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Lưu token vào localStorage
+        localStorage.setItem('token', result.access_token);
+        
+        // Gọi hàm login để update state
+        login({
+          id: result.data.MaTaiKhoan ? result.data.MaTaiKhoan.toString() : '0',
+          email: result.data.Email,
+          name: result.data.HoTen,
+          role: 'user'
+        });
+
+        // Tự động chuyển qua trang ứng viên
+        navigate('/candidate/dashboard');
+      } else {
+        alert("Đăng ký thất bại: " + (result.message || 'Email đã tồn tại hoặc thông tin không hợp lệ.'));
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+      alert("Lỗi kết nối đến máy chủ.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,8 +108,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-block btn-large auth-submit">
-            Đăng ký
+          <button type="submit" className="btn btn-primary btn-block btn-large auth-submit" disabled={isLoading}>
+            {isLoading ? 'Đang xử lý...' : 'Đăng ký'}
           </button>
         </form>
 
