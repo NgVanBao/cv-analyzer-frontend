@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { FileText, Award, Sparkles, Zap, Upload, Loader2, Briefcase, TrendingUp } from 'lucide-react';
 import './CandidateDashboard.css';
@@ -30,9 +30,19 @@ const CVAnalysis: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
   const [jobDescription, setJobDescription] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = () => {
     if (isAnalyzing) return;
+    if (!jobDescription) {
+      alert("Vui lòng nhập Job Description!");
+      return;
+    }
+    if (!selectedFile) {
+      alert("Vui lòng chọn file CV!");
+      return;
+    }
     
     setIsAnalyzing(true);
     setHasResult(false);
@@ -42,6 +52,12 @@ const CVAnalysis: React.FC = () => {
       setIsAnalyzing(false);
       setHasResult(true);
     }, 2500);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
   };
 
   return (
@@ -96,9 +112,16 @@ const CVAnalysis: React.FC = () => {
           </div>
 
           <div 
-            className={`upload-dropzone ${isAnalyzing ? 'analyzing' : ''}`} 
-            onClick={handleUpload}
+            className={`upload-dropzone ${isAnalyzing ? 'analyzing' : ''} ${selectedFile ? 'has-file' : ''}`} 
+            onClick={() => !isAnalyzing && fileInputRef.current?.click()}
           >
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              accept=".pdf" 
+              style={{ display: 'none' }} 
+            />
             {isAnalyzing ? (
               <div className="analyzing-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Loader2 size={40} className="spin-animation" color="#6366f1" style={{ marginBottom: '16px' }} />
@@ -107,17 +130,59 @@ const CVAnalysis: React.FC = () => {
                   Đang trích xuất và đối chiếu với JD...
                 </p>
               </div>
+            ) : selectedFile ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                <FileText size={48} color="#10b981" />
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 4px 0', fontWeight: 600, color: '#0f172a' }}>{selectedFile.name}</p>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+                <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'underline', cursor: 'pointer' }}>
+                  Nhấn để chọn file khác
+                </p>
+              </div>
             ) : (
               <>
                 <div className="upload-icon-wrapper">
                   <Upload size={24} />
                 </div>
                 <p className="upload-primary-text"><strong>Kéo và thả hồ sơ của bạn vào đây</strong></p>
-                <p className="upload-secondary-text">hoặc nhấn để gửi file PDF đi phân tích</p>
+                <p className="upload-secondary-text">hoặc nhấn để chọn file PDF</p>
                 <div className="upload-hint">Chấp nhận file PDF tối đa 10MB</div>
               </>
             )}
           </div>
+
+          <button 
+            onClick={handleUpload}
+            disabled={isAnalyzing || !selectedFile || !jobDescription}
+            style={{
+              width: '100%',
+              padding: '14px',
+              marginTop: '20px',
+              background: isAnalyzing || !selectedFile || !jobDescription ? '#94a3b8' : '#4f46e5',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 600,
+              fontSize: '1.05rem',
+              cursor: isAnalyzing || !selectedFile || !jobDescription ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'background 0.2s',
+              boxShadow: isAnalyzing || !selectedFile || !jobDescription ? 'none' : '0 4px 6px -1px rgba(79, 70, 229, 0.2)'
+            }}
+          >
+            {isAnalyzing ? (
+              <><Loader2 size={18} className="spin-animation" /> Đang phân tích CV...</>
+            ) : (
+              <><Sparkles size={18} /> Phân Tích CV Của Tôi</>
+            )}
+          </button>
         </div>
 
         {/* Analysis Result Section */}
