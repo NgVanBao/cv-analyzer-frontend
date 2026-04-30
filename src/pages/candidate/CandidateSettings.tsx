@@ -3,7 +3,7 @@ import { Mail, Lock, Save, Shield } from 'lucide-react';
 import './CandidateSettings.css';
 
 const CandidateSettings: React.FC = () => {
-  const [email, setEmail] = useState('user@example.com');
+  const [email, setEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,14 +14,47 @@ const CandidateSettings: React.FC = () => {
     alert('Cập nhật email thành công!');
   };
 
-  const handleUpdatePassword = (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       alert('Mật khẩu mới và xác nhận không khớp!');
       return;
     }
-    // Update password logic can be added here
-    alert('Cập nhật mật khẩu thành công!');
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Bạn cần đăng nhập để thực hiện chức năng này!');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/api/update-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Cập nhật mật khẩu thành công!');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        alert('Cập nhật thất bại: ' + (data.message || 'Mật khẩu hiện tại không đúng.'));
+      }
+    } catch (error) {
+      console.error('Lỗi khi cập nhật mật khẩu:', error);
+      alert('Không thể kết nối tới máy chủ. Vui lòng thử lại sau.');
+    }
   };
 
   return (
@@ -32,33 +65,8 @@ const CandidateSettings: React.FC = () => {
       </div>
 
       <div className="settings-grid">
-        {/* Email Settings */}
-        <div className="settings-card">
-          <div className="settings-card-header">
-            <div className="icon-wrapper primary">
-              <Mail size={24} />
-            </div>
-            <div>
-              <h3>Cập Nhật Email</h3>
-              <p>Thay đổi địa chỉ email liên kết với tài khoản</p>
-            </div>
-          </div>
-          
-          <form onSubmit={handleUpdateEmail} className="settings-form">
-            <div className="form-group">
-              <label>Email hiện tại</label>
-              <input type="email" value={email} disabled className="form-input disabled" />
-            </div>
-            <div className="form-group">
-              <label>Email mới</label>
-              <input type="email" placeholder="Nhập email mới..." required className="form-input" />
-            </div>
-            <button type="submit" className="btn-save">
-              <Save size={18} />
-              Lưu Thay Đổi
-            </button>
-          </form>
-        </div>
+
+
 
         {/* Password Settings */}
         <div className="settings-card">
@@ -71,39 +79,39 @@ const CandidateSettings: React.FC = () => {
               <p>Đảm bảo tài khoản của bạn sử dụng mật khẩu mạnh</p>
             </div>
           </div>
-          
+
           <form onSubmit={handleUpdatePassword} className="settings-form">
             <div className="form-group">
               <label>Mật khẩu hiện tại</label>
-              <input 
-                type="password" 
-                placeholder="Nhập mật khẩu hiện tại" 
+              <input
+                type="password"
+                placeholder="Nhập mật khẩu hiện tại"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                required 
-                className="form-input" 
+                required
+                className="form-input"
               />
             </div>
             <div className="form-group">
               <label>Mật khẩu mới</label>
-              <input 
-                type="password" 
-                placeholder="Nhập mật khẩu mới" 
+              <input
+                type="password"
+                placeholder="Nhập mật khẩu mới"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                required 
-                className="form-input" 
+                required
+                className="form-input"
               />
             </div>
             <div className="form-group">
               <label>Xác nhận mật khẩu mới</label>
-              <input 
-                type="password" 
-                placeholder="Xác nhận mật khẩu mới" 
+              <input
+                type="password"
+                placeholder="Xác nhận mật khẩu mới"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                required 
-                className="form-input" 
+                required
+                className="form-input"
               />
             </div>
             <button type="submit" className="btn-save">
