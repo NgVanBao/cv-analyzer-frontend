@@ -29,7 +29,7 @@ const StatCard = ({ title, value, icon, subtext }: any) => (
 const CVAnalysis: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
-  const [targetJob, setTargetJob] = useState('Backend Developer');
+  const [jobDescription, setJobDescription] = useState('');
 
   const handleUpload = () => {
     if (isAnalyzing) return;
@@ -82,18 +82,17 @@ const CVAnalysis: React.FC = () => {
         {/* Upload Section */}
         <div className="candidate-card upload-section">
           <div className="upload-target-job" style={{ marginBottom: '20px' }}>
-             <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}>Vị trí mục tiêu (Bắt buộc):</label>
-             <select 
-               value={targetJob} 
-               onChange={(e) => setTargetJob(e.target.value)}
-               className="input-field"
-               style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-             >
-                <option value="Backend Developer">Backend Developer</option>
-                <option value="Frontend Developer">Frontend Developer</option>
-                <option value="DevOps Engineer">DevOps Engineer</option>
-                <option value="Data Analyst">Data Analyst</option>
-             </select>
+            <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}>Mô tả công việc - JD (Bắt buộc):</label>
+            <textarea 
+              value={jobDescription} 
+              onChange={(e) => setJobDescription(e.target.value)}
+              placeholder="Dán toàn bộ yêu cầu công việc (Job Description) từ nhà tuyển dụng vào đây..."
+              className="input-field"
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '120px', resize: 'vertical', fontFamily: 'inherit', fontSize: '0.9rem' }}
+            />
+            <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '6px' }}>
+              AI sẽ đối chiếu trực tiếp CV của bạn với các yêu cầu kỹ năng trong JD này để cho ra điểm số chính xác nhất.
+            </p>
           </div>
 
           <div 
@@ -104,7 +103,9 @@ const CVAnalysis: React.FC = () => {
               <div className="analyzing-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Loader2 size={40} className="spin-animation" color="#6366f1" style={{ marginBottom: '16px' }} />
                 <h3 style={{ color: '#4f46e5', margin: '0 0 8px 0' }}>AI đang quét hồ sơ...</h3>
-                <p style={{ color: '#64748b', fontSize: '0.85rem' }}>Đang đối chiếu với vị trí {targetJob}</p>
+                <p style={{ color: '#64748b', fontSize: '0.85rem' }}>
+                  Đang trích xuất và đối chiếu với JD...
+                </p>
               </div>
             ) : (
               <>
@@ -126,7 +127,9 @@ const CVAnalysis: React.FC = () => {
               <div className="analysis-title">
                 <div className="analysis-icon"><Briefcase size={20} /></div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#0f172a' }}>{targetJob}</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#0f172a' }}>
+                    Phân tích theo Job Description
+                  </h3>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>Kết quả đánh giá AI</p>
                 </div>
               </div>
@@ -183,7 +186,7 @@ const CVAnalysis: React.FC = () => {
                 </div>
 
                 <div className="analysis-recommendation">
-                  <strong>Khuyến nghị từ AI:</strong> Kỹ năng của bạn khá vững cho vị trí {targetJob}. Tuy nhiên nhà tuyển dụng thường yêu cầu thêm khả năng thao tác với Docker/Kubernetes. Hãy bổ sung từ khóa CI/CD vào phần kinh nghiệm nếu bạn đã từng làm qua.
+                  <strong>Khuyến nghị từ AI:</strong> Kỹ năng của bạn khá vững. Tuy nhiên dựa trên JD bạn cung cấp, nhà tuyển dụng thường yêu cầu thêm khả năng thao tác với Docker/Kubernetes. Hãy bổ sung từ khóa CI/CD vào phần kinh nghiệm nếu bạn đã từng làm qua.
                 </div>
               </div>
             </div>
