@@ -20,7 +20,7 @@ const AdminJobs: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/tin_tuyen_dung')
+    fetch('http://localhost:8000/api/tin-tuyen-dung')
       .then(res => res.json())
       .then((data: any[]) => {
         const mappedJobs = data.map(j => {
@@ -50,7 +50,7 @@ const AdminJobs: React.FC = () => {
     if (!job) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/tin_tuyen_dung/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/tin-tuyen-dung/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
@@ -79,7 +79,7 @@ const AdminJobs: React.FC = () => {
     if (!job) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/tin_tuyen_dung/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/tin-tuyen-dung/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
@@ -106,7 +106,7 @@ const AdminJobs: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (confirm('Bạn có chắc chắn muốn xóa vĩnh viễn tin tuyển dụng này khỏi database?')) {
       try {
-        const response = await fetch(`http://localhost:8000/api/tin_tuyen_dung/${id}`, {
+        const response = await fetch(`http://localhost:8000/api/tin-tuyen-dung/${id}`, {
           method: 'DELETE',
           headers: { 'Accept': 'application/json' }
         });
