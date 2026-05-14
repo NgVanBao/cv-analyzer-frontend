@@ -32,8 +32,9 @@ const CVAnalysis: React.FC = () => {
   const [jobDescription, setJobDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (isAnalyzing) return;
     if (!jobDescription) {
       alert("Vui lòng nhập Job Description!");
@@ -46,12 +47,36 @@ const CVAnalysis: React.FC = () => {
     
     setIsAnalyzing(true);
     setHasResult(false);
+    setAnalysisResult(null);
     
-    // Giả lập delay của AI phân tích
-    setTimeout(() => {
+    const formData = new FormData();
+    formData.append('file_cv', selectedFile);
+    formData.append('job_description', jobDescription);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/ho-so-cv/analyze-custom-jd', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.data) {
+        setAnalysisResult(result.data);
+        setHasResult(true);
+      } else {
+        alert(`Phân tích thất bại: ${result.message || 'Có lỗi xảy ra từ AI.'}`);
+      }
+    } catch (error) {
+      console.error('Lỗi khi phân tích:', error);
+      alert('Không thể kết nối đến máy chủ.');
+    } finally {
       setIsAnalyzing(false);
-      setHasResult(true);
-    }, 2500);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,7 +211,7 @@ const CVAnalysis: React.FC = () => {
         </div>
 
         {/* Analysis Result Section */}
-        {hasResult && (
+        {hasResult && analysisResult && (
           <div className="candidate-card analysis-result-section slide-in-animation">
             <div className="analysis-header">
               <div className="analysis-title">
@@ -199,7 +224,7 @@ const CVAnalysis: React.FC = () => {
                 </div>
               </div>
               <div className="analysis-badge">
-               <TrendingUp size={14} /> Rất phù hợp
+               <TrendingUp size={14} /> {analysisResult.tyle_phuhop >= 70 ? 'Rất phù hợp' : analysisResult.tyle_phuhop >= 50 ? 'Phù hợp trung bình' : 'Cần cải thiện'}
               </div>
             </div>
 
@@ -208,7 +233,10 @@ const CVAnalysis: React.FC = () => {
                 <ResponsiveContainer width={120} height={120}>
                   <PieChart>
                     <Pie
-                      data={pieData}
+                      data={[
+                        { name: 'Phù hợp', value: analysisResult.tyle_phuhop || 0 },
+                        { name: 'Còn thiếu', value: 100 - (analysisResult.tyle_phuhop || 0) },
+                      ]}
                       cx="50%"
                       cy="50%"
                       innerRadius={45}
@@ -224,7 +252,7 @@ const CVAnalysis: React.FC = () => {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="chart-center-label">
-                  <span className="chart-score">78%</span>
+                  <span className="chart-score">{analysisResult.tyle_phuhop || 0}%</span>
                   <span className="chart-text">Điểm phù hợp</span>
                 </div>
                 <p className="chart-bottom-text">So với yêu cầu chuẩn của vị trí</p>
@@ -232,27 +260,39 @@ const CVAnalysis: React.FC = () => {
 
               <div className="analysis-details">
                 <div className="skill-group">
-                  <h4 className="skill-title success"><CheckCircleIcon /> Kỹ năng phù hợp (5)</h4>
+                  <h4 className="skill-title success"><CheckCircleIcon /> Kỹ năng phù hợp ({(analysisResult.kynang_phuhop || []).length})</h4>
                   <div className="skill-tags">
-                    <span className="skill-tag success">PHP</span>
-                    <span className="skill-tag success">Laravel</span>
-                    <span className="skill-tag success">MySQL</span>
-                    <span className="skill-tag success">REST API</span>
-                    <span className="skill-tag success">Git</span>
+                    {(analysisResult.kynang_phuhop || []).map((skill: string, idx: number) => (
+                      <span key={idx} className="skill-tag success">{skill}</span>
+                    ))}
                   </div>
                 </div>
 
                 <div className="skill-group" style={{ marginTop: '16px' }}>
-                  <h4 className="skill-title danger"><XCircleIcon /> Kỹ năng còn thiếu (2)</h4>
+                  <h4 className="skill-title danger"><XCircleIcon /> Kỹ năng còn thiếu ({(analysisResult.kynang_thieu || []).length})</h4>
                   <div className="skill-tags">
-                    <span className="skill-tag danger">Kubernetes</span>
-                    <span className="skill-tag danger">CI/CD</span>
+                    {(analysisResult.kynang_thieu || []).map((skill: string, idx: number) => (
+                      <span key={idx} className="skill-tag danger">{skill}</span>
+                    ))}
                   </div>
                 </div>
 
                 <div className="analysis-recommendation">
-                  <strong>Khuyến nghị từ AI:</strong> Kỹ năng của bạn khá vững. Tuy nhiên dựa trên JD bạn cung cấp, nhà tuyển dụng thường yêu cầu thêm khả năng thao tác với Docker/Kubernetes. Hãy bổ sung từ khóa CI/CD vào phần kinh nghiệm nếu bạn đã từng làm qua.
+                  <strong>Khuyến nghị từ AI:</strong> {analysisResult.khuyen_nghi || 'Không có nhận xét chi tiết.'}
                 </div>
+
+                {analysisResult.lotrinh && analysisResult.lotrinh.length > 0 && (
+                  <div className="skill-group" style={{ marginTop: '20px' }}>
+                    <h4 className="skill-title" style={{ color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1rem' }}>
+                      <Sparkles size={16} color="#8b5cf6" /> Lộ trình phát triển đề xuất
+                    </h4>
+                    <ul style={{ paddingLeft: '20px', marginTop: '8px', color: '#334155', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                      {analysisResult.lotrinh.map((step: string, idx: number) => (
+                        <li key={idx} style={{ marginBottom: '6px' }}>{step}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>
