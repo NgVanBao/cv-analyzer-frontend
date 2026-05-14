@@ -123,16 +123,18 @@ const CVAnalysis: React.FC = () => {
         {/* Upload Section */}
         <div className="candidate-card upload-section">
           <div className="upload-target-job" style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}>Mô tả công việc - JD (Bắt buộc):</label>
+            <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}>
+              Mô tả công việc mục tiêu (Job Description):
+            </label>
             <textarea 
               value={jobDescription} 
               onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Dán toàn bộ yêu cầu công việc (Job Description) từ nhà tuyển dụng vào đây..."
+              placeholder="Ví dụ: Yêu cầu thành thạo ReactJS, TypeScript, có kinh nghiệm làm việc với REST API và Git. Ưu tiên ứng viên có tư duy tốt về UI/UX..."
               className="input-field"
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '120px', resize: 'vertical', fontFamily: 'inherit', fontSize: '0.9rem' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '120px', resize: 'vertical', fontFamily: 'inherit', fontSize: '0.95rem', lineHeight: '1.5' }}
             />
-            <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '6px' }}>
-              AI sẽ đối chiếu trực tiếp CV của bạn với các yêu cầu kỹ năng trong JD này để cho ra điểm số chính xác nhất.
+            <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              💡 <span>Hãy dán toàn bộ yêu cầu công việc của vị trí bạn muốn ứng tuyển. AI sẽ đối chiếu chuyên sâu mức độ khớp kỹ năng và vạch ra lộ trình giúp bạn tối ưu CV.</span>
             </p>
           </div>
 
