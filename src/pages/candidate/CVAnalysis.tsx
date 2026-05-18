@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { FileText, Award, Sparkles, Zap, Upload, Loader2, Briefcase, TrendingUp } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import './CandidateDashboard.css';
 
 const pieData = [
@@ -27,6 +28,7 @@ const StatCard = ({ title, value, icon, subtext }: any) => (
 );
 
 const CVAnalysis: React.FC = () => {
+  const { user } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
   const [jobDescription, setJobDescription] = useState('');
@@ -44,12 +46,17 @@ const CVAnalysis: React.FC = () => {
       alert("Vui lòng chọn file CV!");
       return;
     }
+    if (!user?.id) {
+      alert('Vui lòng đăng nhập tài khoản để tải lên CV!');
+      return;
+    }
     
     setIsAnalyzing(true);
     setHasResult(false);
     setAnalysisResult(null);
     
     const formData = new FormData();
+    formData.append('MaTaiKhoan', user.id);
     formData.append('file_cv', selectedFile);
     formData.append('job_description', jobDescription);
 
