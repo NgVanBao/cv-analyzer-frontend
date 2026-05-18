@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
-import { Mail, Lock, Save, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Lock, Save, Shield, User } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import './CandidateSettings.css';
 
 const CandidateSettings: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const { user } = useAuth();
+
+  const [fullName, setFullName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState('');
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleUpdateEmail = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      setFullName(user.name || '');
+      setEmail(user.email || '');
+    }
+  }, [user]);
+
+  const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    // Validate can be added here
-    alert('Cập nhật email thành công!');
+    // Logic gọi API update profile sẽ thêm sau
+    alert('Cập nhật thông tin cơ bản thành công! (Giao diện mẫu)');
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -66,9 +79,57 @@ const CandidateSettings: React.FC = () => {
 
       <div className="settings-grid">
 
+        {/* Basic Info Settings */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <div className="icon-wrapper primary">
+              <User size={24} />
+            </div>
+            <div>
+              <h3>Thông Tin Cơ Bản</h3>
+              <p>Quản lý tên hiển thị, email và số điện thoại liên lạc</p>
+            </div>
+          </div>
 
-
-        {/* Password Settings */}
+          <form onSubmit={handleUpdateProfile} className="settings-form">
+            <div className="form-group">
+              <label>Họ và Tên</label>
+              <input
+                type="text"
+                placeholder="Nhập họ và tên"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                className="form-input"
+              />
+            </div>
+            <div className="form-group">
+              <label>Địa chỉ Email</label>
+              <input
+                type="email"
+                placeholder="Nhập địa chỉ email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="form-input"
+              />
+            </div>
+            <div className="form-group">
+              <label>Số điện thoại</label>
+              <input
+                type="tel"
+                placeholder="Nhập số điện thoại"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="form-input"
+              />
+            </div>
+            <button type="submit" className="btn-save">
+              <Save size={18} />
+              Lưu Thay Đổi
+            </button>
+          </form>
+        </div>        {/* Password Settings */}
         <div className="settings-card">
           <div className="settings-card-header">
             <div className="icon-wrapper warning">
