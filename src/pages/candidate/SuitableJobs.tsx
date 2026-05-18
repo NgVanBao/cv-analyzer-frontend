@@ -1,75 +1,106 @@
-import React, { useState } from 'react';
-import { Search, MapPin, Building, DollarSign, Bookmark, ArrowRight, Target } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, MapPin, Building, DollarSign, Bookmark, ArrowRight, Target, Loader2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import './CandidateDashboard.css';
 
-const mockJobs = [
-  { 
-    id: 1, 
-    title: 'Senior React Developer', 
-    company: 'TechCorp Vietnam', 
-    location: 'Hà Nội', 
-    salary: '30Tr - 45Tr', 
-    matchScore: 95, 
-    skills: ['React', 'TypeScript', 'Redux', 'System Design'], 
-    tags: ['Remote', 'Urgent'] 
-  },
-  { 
-    id: 2, 
-    title: 'Frontend Engineer', 
-    company: 'FPT Software', 
-    location: 'Đà Nẵng', 
-    salary: '15Tr - 25Tr', 
-    matchScore: 88, 
-    skills: ['React', 'JavaScript', 'CSS', 'HTML'], 
-    tags: ['On-site'] 
-  },
-  { 
-    id: 3, 
-    title: 'Fullstack Developer (NodeJS/React)', 
-    company: 'VNG Corporation', 
-    location: 'Hồ Chí Minh', 
-    salary: 'Thoả thuận', 
-    matchScore: 82, 
-    skills: ['NodeJS', 'React', 'MongoDB'], 
-    tags: ['Hybrid'] 
-  },
-  { 
-    id: 4, 
-    title: 'UI/UX Engineer', 
-    company: 'Shopee Vietnam', 
-    location: 'Hồ Chí Minh', 
-    salary: '25Tr - 40Tr', 
-    matchScore: 78, 
-    skills: ['Figma', 'React', 'Tailwind CSS'], 
-    tags: ['On-site'] 
-  },
-  { 
-    id: 5, 
-    title: 'Web Developer', 
-    company: 'Momo Company', 
-    location: 'Hà Nội', 
-    salary: '18Tr - 30Tr', 
-    matchScore: 75, 
-    skills: ['Vue', 'JavaScript', 'REST API'], 
-    tags: ['Hybrid'] 
-  },
-  { 
-    id: 6, 
-    title: 'Junior Frontend Developer', 
-    company: 'Tiki', 
-    location: 'Hồ Chí Minh', 
-    salary: '10Tr - 15Tr', 
-    matchScore: 68, 
-    skills: ['HTML', 'CSS', 'JavaScript', 'React'], 
-    tags: ['On-site'] 
-  }
-];
+interface JobRecommendation {
+  id: number;
+  title: string;
+  company: string;
+  location: string;
+  salary: string;
+  matchScore: number;
+  skills: string[];
+  tags: string[];
+}
 
 const SuitableJobs: React.FC = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('All');
+  const [jobs, setJobs] = useState<JobRecommendation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredJobs = mockJobs.filter(job => {
+  useEffect(() => {
+    const fetchTopJobs = async () => {
+      setIsLoading(true);
+      try {
+        // 1. Lấy CV mới nhất của ứng viên
+        const cvResponse = await fetch('http://localhost:8000/api/ho-so-cv', {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          }
+        });
+        const cvData = await cvResponse.json();
+        const userCVs = cvData.filter((item: any) => user ? item.MaTaiKhoan.toString() === user.id : true);
+        userCVs.sort((a: any, b: any) => b.MaCV - a.MaCV);
+
+        if (userCVs.length === 0) {
+          setIsLoading(false);
+          return;
+        }
+
+        const latestCvId = userCVs[0].MaCV;
+
+        // 2. Lấy gợi ý công việc cho CV này
+        const recommendResponse = await fetch(`http://localhost:8000/api/ket-qua-goi-y/cv/${latestCvId}`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          }
+        });
+        const recommendData = await recommendResponse.json();
+
+        // Lọc bỏ Custom JD và lấy Top 4
+        const topJobs = recommendData
+          .filter((item: any) => item.tin_tuyen_dung && item.tin_tuyen_dung.TrangThai !== 'Custom')
+          .slice(0, 4)
+          .map((item: any) => {
+            const job = item.tin_tuyen_dung;
+            let salaryStr = 'Thoả thuận';
+            if (job.LuongToiThieu && job.LuongToiDa) {
+              salaryStr = `${(job.LuongToiThieu / 1000000).toFixed(0)}Tr - ${(job.LuongToiDa / 1000000).toFixed(0)}Tr`;
+            } else if (job.LuongToiThieu) {
+              salaryStr = `Từ ${(job.LuongToiThieu / 1000000).toFixed(0)}Tr`;
+            }
+
+            let matchedSkills: string[] = [];
+            try {
+                if (item.PhanTichChiTiet) {
+                    const parsed = JSON.parse(item.PhanTichChiTiet);
+                    if (parsed.kynang_phuhop) {
+                        matchedSkills = parsed.kynang_phuhop.slice(0, 4); // Lấy tối đa 4 kỹ năng cho đẹp UI
+                    }
+                }
+            } catch (e) {}
+
+            return {
+              id: item.MaKetQua,
+              title: job.TieuDe || 'Không rõ',
+              company: job.TenCongTy || 'Không rõ',
+              location: job.DiaDiem || 'Không rõ',
+              salary: salaryStr,
+              matchScore: Math.round(item.TyLePhuHop),
+              skills: matchedSkills,
+              tags: [job.LoaiHinh, job.CapBac].filter(Boolean)
+            };
+          });
+
+        setJobs(topJobs);
+      } catch (error) {
+        console.error('Lỗi khi tải công việc phù hợp:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchTopJobs();
+    }
+  }, [user]);
+
+  const filteredJobs = jobs.filter(job => {
     const matchSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                        job.company.toLowerCase().includes(searchTerm.toLowerCase());
     const matchLocation = locationFilter === 'All' || job.location.includes(locationFilter);
@@ -127,7 +158,13 @@ const SuitableJobs: React.FC = () => {
 
       {/* Jobs Grid */}
       <div className="suitable-jobs-grid">
-        {filteredJobs.map(job => (
+        {isLoading ? (
+          <div className="loading-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
+            <Loader2 size={36} className="spin-animation" style={{ margin: '0 auto 16px auto', color: '#4f46e5' }} />
+            <h3 style={{ color: '#0f172a', marginBottom: '8px' }}>AI Đang Phân Tích...</h3>
+            <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Hệ thống đang đối chiếu CV của bạn với hàng ngàn tin tuyển dụng</p>
+          </div>
+        ) : filteredJobs.map(job => (
           <div key={job.id} className="job-match-card">
             <div className="job-match-header">
               <div className="job-company-logo">
