@@ -21,10 +21,49 @@ const CandidateSettings: React.FC = () => {
     }
   }, [user]);
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic gọi API update profile sẽ thêm sau
-    alert('Cập nhật thông tin cơ bản thành công! (Giao diện mẫu)');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Bạn cần đăng nhập để thực hiện chức năng này!');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/api/update-profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          HoTen: fullName,
+          Email: email,
+          // SoDienThoai: phone // Tạm thời chưa gửi vì DB chưa có cột này
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Cập nhật thông tin cơ bản thành công!');
+        // Update user in localStorage to reflect new name/email immediately
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const userObj = JSON.parse(userStr);
+          userObj.name = fullName;
+          userObj.email = email;
+          localStorage.setItem('user', JSON.stringify(userObj));
+          // Note: ideally we should trigger a context update here if the AuthContext doesn't poll
+        }
+      } else {
+        alert('Cập nhật thất bại: ' + (data.message || 'Lỗi không xác định.'));
+      }
+    } catch (error) {
+      console.error('Lỗi khi cập nhật profile:', error);
+      alert('Không thể kết nối tới máy chủ. Vui lòng thử lại sau.');
+    }
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -114,16 +153,7 @@ const CandidateSettings: React.FC = () => {
                 className="form-input"
               />
             </div>
-            <div className="form-group">
-              <label>Số điện thoại</label>
-              <input
-                type="tel"
-                placeholder="Nhập số điện thoại"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="form-input"
-              />
-            </div>
+
             <button type="submit" className="btn-save">
               <Save size={18} />
               Lưu Thay Đổi
