@@ -20,6 +20,7 @@ const SuitableJobs: React.FC = () => {
   const [locationFilter, setLocationFilter] = useState('All');
   const [jobs, setJobs] = useState<JobRecommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [savedJobIds, setSavedJobIds] = useState<number[]>([]);
 
   useEffect(() => {
     const fetchTopJobs = async () => {
@@ -98,7 +99,39 @@ const SuitableJobs: React.FC = () => {
     if (user) {
       fetchTopJobs();
     }
+    
+    // Load saved job IDs from localStorage
+    const savedStr = localStorage.getItem('savedJobs');
+    if (savedStr) {
+      const savedList = JSON.parse(savedStr);
+      setSavedJobIds(savedList.map((j: any) => j.id));
+    }
   }, [user]);
+
+  const handleToggleSave = (job: JobRecommendation) => {
+    const savedStr = localStorage.getItem('savedJobs');
+    let savedList = savedStr ? JSON.parse(savedStr) : [];
+    
+    const isSaved = savedList.some((j: any) => j.id === job.id);
+    
+    if (isSaved) {
+      savedList = savedList.filter((j: any) => j.id !== job.id);
+    } else {
+      savedList.push({
+        id: job.id,
+        title: job.title,
+        company: job.company,
+        location: job.location,
+        salary: job.salary,
+        status: 'active',
+        dateSaved: new Date().toLocaleDateString('vi-VN'),
+        tags: job.tags
+      });
+    }
+    
+    localStorage.setItem('savedJobs', JSON.stringify(savedList));
+    setSavedJobIds(savedList.map((j: any) => j.id));
+  };
 
   const filteredJobs = jobs.filter(job => {
     const matchSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -202,8 +235,13 @@ const SuitableJobs: React.FC = () => {
             </div>
             
             <div className="job-card-actions">
-              <button className="btn-icon-save" title="Lưu công việc">
-                <Bookmark size={18} />
+              <button 
+                className={`btn-icon-save ${savedJobIds.includes(job.id) ? 'saved' : ''}`} 
+                title={savedJobIds.includes(job.id) ? "Bỏ lưu" : "Lưu công việc"}
+                onClick={() => handleToggleSave(job)}
+                style={{ color: savedJobIds.includes(job.id) ? '#4f46e5' : '#64748b' }}
+              >
+                <Bookmark size={18} fill={savedJobIds.includes(job.id) ? '#4f46e5' : 'none'} />
               </button>
               <button className="btn-apply-now">
                 Ứng tuyển ngay <ArrowRight size={16} />
