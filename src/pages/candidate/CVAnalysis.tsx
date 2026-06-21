@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { FileText, Award, Sparkles, Zap, Upload, Loader2, Briefcase, TrendingUp } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import './CandidateDashboard.css';
 
 const pieData = [
@@ -27,13 +29,25 @@ const StatCard = ({ title, value, icon, subtext }: any) => (
 );
 
 const CVAnalysis: React.FC = () => {
+  const { user } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [hasResult, setHasResult] = useState(false);
-  const [jobDescription, setJobDescription] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Lấy state từ CandidateLayout
+  const { cvAnalysisState, setCvAnalysisState } = useOutletContext<any>() || { 
+    cvAnalysisState: { hasResult: false, jobDescription: '', selectedFile: null, analysisResult: null }, 
+    setCvAnalysisState: () => {} 
+  };
+  
+  const { hasResult, jobDescription, selectedFile, analysisResult } = cvAnalysisState;
 
-  const handleUpload = () => {
+  const setHasResult = (val: boolean) => setCvAnalysisState((prev: any) => ({ ...prev, hasResult: val }));
+  const setJobDescription = (val: string) => setCvAnalysisState((prev: any) => ({ ...prev, jobDescription: val }));
+  const setSelectedFile = (val: File | null) => setCvAnalysisState((prev: any) => ({ ...prev, selectedFile: val }));
+  const setAnalysisResult = (val: any) => setCvAnalysisState((prev: any) => ({ ...prev, analysisResult: val }));
+
+
+  const handleUpload = async () => {
     if (isAnalyzing) return;
     if (!jobDescription) {
       alert("Vui lòng nhập Job Description!");
@@ -43,15 +57,44 @@ const CVAnalysis: React.FC = () => {
       alert("Vui lòng chọn file CV!");
       return;
     }
-    
+    if (!user?.id) {
+      alert('Vui lòng đăng nhập tài khoản để tải lên CV!');
+      return;
+    }
+
     setIsAnalyzing(true);
     setHasResult(false);
-    
-    // Giả lập delay của AI phân tích
-    setTimeout(() => {
+    setAnalysisResult(null);
+
+    const formData = new FormData();
+    formData.append('MaTaiKhoan', user.id);
+    formData.append('file_cv', selectedFile);
+    formData.append('job_description', jobDescription);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/ho-so-cv/analyze-custom-jd', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.data) {
+        setAnalysisResult(result.data);
+        setHasResult(true);
+      } else {
+        alert(`Phân tích thất bại: ${result.message || 'Có lỗi xảy ra từ AI.'}`);
+      }
+    } catch (error) {
+      console.error('Lỗi khi phân tích:', error);
+      alert('Không thể kết nối đến máy chủ.');
+    } finally {
       setIsAnalyzing(false);
-      setHasResult(true);
-    }, 2500);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,31 +109,31 @@ const CVAnalysis: React.FC = () => {
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px 0', color: '#0f172a' }}>Phân Tích CV AI</h1>
         <p style={{ color: '#64748b', margin: 0 }}>Tải lên và phân tích hồ sơ để được AI tối ưu tỷ lệ đậu phỏng vấn</p>
       </div>
-      
+
       <div className="candidate-stats-grid">
-        <StatCard 
-          title="Lượt Phân Tích Còn Lại" 
-          value="4/5" 
-          subtext="Làm mới vào ngày mai" 
-          icon={<Zap size={18} color="#f59e0b" />} 
+        <StatCard
+          title="Lượt Phân Tích Còn Lại"
+          value="4/5"
+          subtext="Làm mới vào ngày mai"
+          icon={<Zap size={18} color="#f59e0b" />}
         />
-        <StatCard 
-          title="Điểm CV Cao Nhất" 
-          value="82/100" 
-          subtext="Vị trí Frontend Developer" 
-          icon={<Award size={18} color="#3b82f6" />} 
+        <StatCard
+          title="Điểm CV Cao Nhất"
+          value="82/100"
+          subtext="Vị trí Frontend Developer"
+          icon={<Award size={18} color="#3b82f6" />}
         />
-        <StatCard 
-          title="Kỹ Năng Đã Lưu" 
-          value="24" 
-          subtext="Tổng kỹ năng trích xuất" 
-          icon={<Sparkles size={18} color="#8b5cf6" />} 
+        <StatCard
+          title="Kỹ Năng Đã Lưu"
+          value="24"
+          subtext="Tổng kỹ năng trích xuất"
+          icon={<Sparkles size={18} color="#8b5cf6" />}
         />
-        <StatCard 
-          title="Vị Trí Đã Phân Tích" 
-          value="3" 
-          subtext="Backend, Frontend, Fullstack" 
-          icon={<FileText size={18} color="#6366f1" />} 
+        <StatCard
+          title="Vị Trí Đã Phân Tích"
+          value="3"
+          subtext="Backend, Frontend, Fullstack"
+          icon={<FileText size={18} color="#6366f1" />}
         />
       </div>
 
@@ -98,29 +141,31 @@ const CVAnalysis: React.FC = () => {
         {/* Upload Section */}
         <div className="candidate-card upload-section">
           <div className="upload-target-job" style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}>Mô tả công việc - JD (Bắt buộc):</label>
-            <textarea 
-              value={jobDescription} 
+            <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}>
+              Mô tả công việc mục tiêu (Job Description):
+            </label>
+            <textarea
+              value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Dán toàn bộ yêu cầu công việc (Job Description) từ nhà tuyển dụng vào đây..."
+              placeholder="Bạn hãy nhập mô tả công việc bạn muốn ứng tuyển vào đây..."
               className="input-field"
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '120px', resize: 'vertical', fontFamily: 'inherit', fontSize: '0.9rem' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '120px', resize: 'vertical', fontFamily: 'inherit', fontSize: '0.95rem', lineHeight: '1.5' }}
             />
-            <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '6px' }}>
-              AI sẽ đối chiếu trực tiếp CV của bạn với các yêu cầu kỹ năng trong JD này để cho ra điểm số chính xác nhất.
+            <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              💡 <span>Hãy dán toàn bộ yêu cầu công việc của vị trí bạn muốn ứng tuyển. AI sẽ đối chiếu chuyên sâu mức độ khớp kỹ năng và vạch ra lộ trình giúp bạn tối ưu CV.</span>
             </p>
           </div>
 
-          <div 
-            className={`upload-dropzone ${isAnalyzing ? 'analyzing' : ''} ${selectedFile ? 'has-file' : ''}`} 
+          <div
+            className={`upload-dropzone ${isAnalyzing ? 'analyzing' : ''} ${selectedFile ? 'has-file' : ''}`}
             onClick={() => !isAnalyzing && fileInputRef.current?.click()}
           >
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              accept=".pdf" 
-              style={{ display: 'none' }} 
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".pdf"
+              style={{ display: 'none' }}
             />
             {isAnalyzing ? (
               <div className="analyzing-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -155,7 +200,7 @@ const CVAnalysis: React.FC = () => {
             )}
           </div>
 
-          <button 
+          <button
             onClick={handleUpload}
             disabled={isAnalyzing || !selectedFile || !jobDescription}
             style={{
@@ -186,7 +231,7 @@ const CVAnalysis: React.FC = () => {
         </div>
 
         {/* Analysis Result Section */}
-        {hasResult && (
+        {hasResult && analysisResult && (
           <div className="candidate-card analysis-result-section slide-in-animation">
             <div className="analysis-header">
               <div className="analysis-title">
@@ -199,7 +244,7 @@ const CVAnalysis: React.FC = () => {
                 </div>
               </div>
               <div className="analysis-badge">
-               <TrendingUp size={14} /> Rất phù hợp
+                <TrendingUp size={14} /> {analysisResult.tyle_phuhop >= 70 ? 'Rất phù hợp' : analysisResult.tyle_phuhop >= 50 ? 'Phù hợp trung bình' : 'Cần cải thiện'}
               </div>
             </div>
 
@@ -208,7 +253,10 @@ const CVAnalysis: React.FC = () => {
                 <ResponsiveContainer width={120} height={120}>
                   <PieChart>
                     <Pie
-                      data={pieData}
+                      data={[
+                        { name: 'Phù hợp', value: analysisResult.tyle_phuhop || 0 },
+                        { name: 'Còn thiếu', value: 100 - (analysisResult.tyle_phuhop || 0) },
+                      ]}
                       cx="50%"
                       cy="50%"
                       innerRadius={45}
@@ -224,7 +272,7 @@ const CVAnalysis: React.FC = () => {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="chart-center-label">
-                  <span className="chart-score">78%</span>
+                  <span className="chart-score">{analysisResult.tyle_phuhop || 0}%</span>
                   <span className="chart-text">Điểm phù hợp</span>
                 </div>
                 <p className="chart-bottom-text">So với yêu cầu chuẩn của vị trí</p>
@@ -232,27 +280,40 @@ const CVAnalysis: React.FC = () => {
 
               <div className="analysis-details">
                 <div className="skill-group">
-                  <h4 className="skill-title success"><CheckCircleIcon /> Kỹ năng phù hợp (5)</h4>
+                  <h4 className="skill-title success" style={{ fontSize: '1.1rem', marginBottom: '10px' }}><CheckCircleIcon /> Kỹ năng phù hợp ({(analysisResult.kynang_phuhop || []).length})</h4>
                   <div className="skill-tags">
-                    <span className="skill-tag success">PHP</span>
-                    <span className="skill-tag success">Laravel</span>
-                    <span className="skill-tag success">MySQL</span>
-                    <span className="skill-tag success">REST API</span>
-                    <span className="skill-tag success">Git</span>
+                    {(analysisResult.kynang_phuhop || []).map((skill: string, idx: number) => (
+                      <span key={idx} className="skill-tag success" style={{ fontSize: '0.95rem', padding: '6px 14px' }}>{skill}</span>
+                    ))}
                   </div>
                 </div>
 
-                <div className="skill-group" style={{ marginTop: '16px' }}>
-                  <h4 className="skill-title danger"><XCircleIcon /> Kỹ năng còn thiếu (2)</h4>
+                <div className="skill-group" style={{ marginTop: '20px' }}>
+                  <h4 className="skill-title danger" style={{ fontSize: '1.1rem', marginBottom: '10px' }}><XCircleIcon /> Kỹ năng còn thiếu ({(analysisResult.kynang_thieu || []).length})</h4>
                   <div className="skill-tags">
-                    <span className="skill-tag danger">Kubernetes</span>
-                    <span className="skill-tag danger">CI/CD</span>
+                    {(analysisResult.kynang_thieu || []).map((skill: string, idx: number) => (
+                      <span key={idx} className="skill-tag danger" style={{ fontSize: '0.95rem', padding: '6px 14px' }}>{skill}</span>
+                    ))}
                   </div>
                 </div>
 
-                <div className="analysis-recommendation">
-                  <strong>Khuyến nghị từ AI:</strong> Kỹ năng của bạn khá vững. Tuy nhiên dựa trên JD bạn cung cấp, nhà tuyển dụng thường yêu cầu thêm khả năng thao tác với Docker/Kubernetes. Hãy bổ sung từ khóa CI/CD vào phần kinh nghiệm nếu bạn đã từng làm qua.
+                <div className="analysis-recommendation" style={{ fontSize: '1.05rem', lineHeight: '1.7', color: '#1e293b', background: '#f8fafc', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #3b82f6', marginTop: '24px' }}>
+                  <strong style={{ fontSize: '1.1rem', color: '#0f172a' }}>Khuyến nghị từ AI:</strong><br />
+                  <span style={{ display: 'inline-block', marginTop: '4px' }}>{analysisResult.khuyen_nghi || 'Không có nhận xét chi tiết.'}</span>
                 </div>
+
+                {analysisResult.lotrinh && analysisResult.lotrinh.length > 0 && (
+                  <div className="skill-group" style={{ marginTop: '24px', background: '#f5f3ff', padding: '16px', borderRadius: '8px', border: '1px solid #ede9fe' }}>
+                    <h4 className="skill-title" style={{ color: '#5b21b6', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.15rem', fontWeight: 700, margin: '0 0 12px 0' }}>
+                      <Sparkles size={20} color="#8b5cf6" /> Lộ trình phát triển đề xuất
+                    </h4>
+                    <ul style={{ paddingLeft: '24px', margin: 0, color: '#334155', fontSize: '1.05rem', lineHeight: '1.8' }}>
+                      {analysisResult.lotrinh.map((step: string, idx: number) => (
+                        <li key={idx} style={{ marginBottom: '10px' }}>{step}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>

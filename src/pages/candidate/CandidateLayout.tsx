@@ -17,6 +17,14 @@ const CandidateLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // State chung cho CV Analysis để giữ kết quả khi chuyển trang
+  const [cvAnalysisState, setCvAnalysisState] = React.useState({
+    hasResult: false,
+    jobDescription: '',
+    selectedFile: null as File | null,
+    analysisResult: null as any
+  });
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -94,7 +102,7 @@ const CandidateLayout: React.FC = () => {
         </header>
         
         <div className="candidate-content-inner">
-          <Outlet />
+          <Outlet context={{ cvAnalysisState, setCvAnalysisState }} />
         </div>
       </main>
     </div>

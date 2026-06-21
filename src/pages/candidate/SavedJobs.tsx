@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, MapPin, DollarSign, Trash2, ArrowRight, Bookmark, CircleDot } from 'lucide-react';
 import './CandidateDashboard.css';
 
@@ -39,8 +39,17 @@ const SavedJobs: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   
-  // Trạng thái cục bộ để giả lập xóa job
-  const [jobs, setJobs] = useState(mockSavedJobs);
+  const [jobs, setJobs] = useState<any[]>([]);
+
+  useEffect(() => {
+    const savedStr = localStorage.getItem('savedJobs');
+    if (savedStr && JSON.parse(savedStr).length > 0) {
+      setJobs(JSON.parse(savedStr));
+    } else {
+      // Fallback for demo purposes
+      setJobs(mockSavedJobs);
+    }
+  }, []);
 
   const filteredJobs = jobs.filter(job => {
     const matchSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -50,7 +59,9 @@ const SavedJobs: React.FC = () => {
   });
 
   const handleUnsave = (id: number) => {
-    setJobs(jobs.filter(j => j.id !== id));
+    const newJobs = jobs.filter(j => j.id !== id);
+    setJobs(newJobs);
+    localStorage.setItem('savedJobs', JSON.stringify(newJobs));
   };
 
   return (

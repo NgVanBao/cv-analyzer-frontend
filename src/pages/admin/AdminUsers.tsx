@@ -17,7 +17,7 @@ const AdminUsers: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/nguoi_dung')
+    fetch('http://localhost:8000/api/nguoi-dung')
       .then(res => res.json())
       .then((data: any[]) => {
         const mappedUsers = data.map(u => ({

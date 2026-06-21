@@ -1,17 +1,69 @@
-import React, { useState } from 'react';
-import { Mail, Lock, Save, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Lock, Save, Shield, User } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import './CandidateSettings.css';
 
 const CandidateSettings: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const { user } = useAuth();
+
+  const [fullName, setFullName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState('');
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleUpdateEmail = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      setFullName(user.name || '');
+      setEmail(user.email || '');
+    }
+  }, [user]);
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validate can be added here
-    alert('Cập nhật email thành công!');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Bạn cần đăng nhập để thực hiện chức năng này!');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/api/update-profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          HoTen: fullName,
+          Email: email,
+          // SoDienThoai: phone // Tạm thời chưa gửi vì DB chưa có cột này
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Cập nhật thông tin cơ bản thành công!');
+        // Update user in localStorage to reflect new name/email immediately
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const userObj = JSON.parse(userStr);
+          userObj.name = fullName;
+          userObj.email = email;
+          localStorage.setItem('user', JSON.stringify(userObj));
+          // Note: ideally we should trigger a context update here if the AuthContext doesn't poll
+        }
+      } else {
+        alert('Cập nhật thất bại: ' + (data.message || 'Lỗi không xác định.'));
+      }
+    } catch (error) {
+      console.error('Lỗi khi cập nhật profile:', error);
+      alert('Không thể kết nối tới máy chủ. Vui lòng thử lại sau.');
+    }
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -66,9 +118,48 @@ const CandidateSettings: React.FC = () => {
 
       <div className="settings-grid">
 
+        {/* Basic Info Settings */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <div className="icon-wrapper primary">
+              <User size={24} />
+            </div>
+            <div>
+              <h3>Thông Tin Cơ Bản</h3>
+              <p>Quản lý tên hiển thị, email và số điện thoại liên lạc</p>
+            </div>
+          </div>
 
+          <form onSubmit={handleUpdateProfile} className="settings-form">
+            <div className="form-group">
+              <label>Họ và Tên</label>
+              <input
+                type="text"
+                placeholder="Nhập họ và tên"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                className="form-input"
+              />
+            </div>
+            <div className="form-group">
+              <label>Địa chỉ Email</label>
+              <input
+                type="email"
+                placeholder="Nhập địa chỉ email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="form-input"
+              />
+            </div>
 
-        {/* Password Settings */}
+            <button type="submit" className="btn-save">
+              <Save size={18} />
+              Lưu Thay Đổi
+            </button>
+          </form>
+        </div>        {/* Password Settings */}
         <div className="settings-card">
           <div className="settings-card-header">
             <div className="icon-wrapper warning">
